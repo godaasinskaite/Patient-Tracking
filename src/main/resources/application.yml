@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/patient
+    username: godaasinskaite
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: none #with flyway none
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
+main:
+  web-application-type: servlet
+
+flyway:
+  enabled: true
+  locations:
+#    - db/migration/V1__Create_Assessment_Table.sql
+#    - db/migration/V2__Create_Attendance_Table.sql
+#    - db/migration/V3__Create_Progress_Table.sql
+#    - db/migration/V4__Create_Patient_Table.sql
+  schemas:
+    patient
+  url: jdbc:postgresql://localhost/patient
+  user: godaasinskaite
+  password: password
+  table: patient_version
+  baseline-on-migrate: true
+  validate-on-migrate: true
+
+
+server:
+  port: 1453
