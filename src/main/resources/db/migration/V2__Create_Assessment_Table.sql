@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS assessment (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR NOT NULL,
+    points INTEGER NOT NULL,
+    patient_id BIGINT REFERENCES patient(id) ON DELETE CASCADE
+);
