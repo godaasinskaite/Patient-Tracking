@@ -1,7 +1,7 @@
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/patient
-    username: godaasinskaite
+    username: username
     password: password
   jpa:
     hibernate:
@@ -24,7 +24,7 @@ flyway:
   schemas:
     patient
   url: jdbc:postgresql://localhost/patient
-  user: godaasinskaite
+  user: username
   password: password
   table: patient_version
   baseline-on-migrate: true
