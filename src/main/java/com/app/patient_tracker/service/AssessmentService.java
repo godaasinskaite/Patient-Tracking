@@ -8,9 +8,9 @@ import com.app.patient_tracker.exception.PatientNotFoundException;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.repository.AssessmentRepository;
-import com.app.patient_tracker.validator.AssessmentMappingService;
 import com.app.patient_tracker.validator.AssessmentRequestValidator;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -20,19 +20,13 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 @Data
+@RequiredArgsConstructor
 public class AssessmentService {
 
     private final AssessmentRepository assessmentRepository;
     private final PatientService patientService;
     private final AssessmentRequestValidator assessmentRequestValidator;
     private final AssessmentMappingService assessmentMappingService;
-
-    public AssessmentService(AssessmentRepository assessmentRepository, PatientService patientService, AssessmentRequestValidator assessmentRequestValidator, AssessmentMappingService assessmentMappingService) {
-        this.assessmentRepository = assessmentRepository;
-        this.patientService = patientService;
-        this.assessmentRequestValidator = assessmentRequestValidator;
-        this.assessmentMappingService = assessmentMappingService;
-    }
 
     /**
      * Method assesses a patient based on the provided assessment request data.
@@ -45,13 +39,14 @@ public class AssessmentService {
      * @throws PatientNotFoundException If the patient with specified id is not found.
      * @throws MandatoryFieldsMissingException If mandatory fields are missing in the assessment request data.
      */
-    public Assessment assessPatient(Long patientId, AssessmentRequestDto assessmentRequestDto) throws PatientNotFoundException, MandatoryFieldsMissingException {
+    public Assessment assessPatient(final Long patientId, final AssessmentRequestDto assessmentRequestDto) throws PatientNotFoundException, MandatoryFieldsMissingException {
         Patient patient = patientService.getPatientById(patientId);
 
         try {
             assessmentRequestValidator.validateAssessmentRequest(assessmentRequestDto);
             Assessment newAssessment = assessmentMappingService.mapAttendanceToEntity(assessmentRequestDto);
             newAssessment.setPatient(patient);
+            patient.getAssessments().add(newAssessment);
 
             assessmentRepository.save(newAssessment);
             log.info("New assessment added.");
@@ -74,7 +69,7 @@ public class AssessmentService {
      * @throws AssessmentUpdateException If either the provided title or points is null,
      *                                      indicating that the assessment can not be updated.
      */
-    public void updateAssessment(Long id, String title, Integer points) throws AssessmentNotFoundException, AssessmentUpdateException {
+    public void updateAssessment(final Long id, final String title, final Integer points) throws AssessmentNotFoundException, AssessmentUpdateException {
         log.info("Looking for assessment with id = " + id);
         Assessment assessmentToUpdate = assessmentRepository.findById(id)
                 .orElseThrow(() -> new AssessmentNotFoundException("Assessment can not be found."));

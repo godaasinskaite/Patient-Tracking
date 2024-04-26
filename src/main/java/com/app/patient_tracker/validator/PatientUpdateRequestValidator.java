@@ -6,39 +6,39 @@ import com.app.patient_tracker.model.Patient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.Objects;
 
 @Service
 @Slf4j
 public class PatientUpdateRequestValidator {
 
-    public Boolean validateGivenDataForUpdate(PatientUpdateRequest patientUpdateRequest, Patient patient) throws InvalidDataException {
-
-        String name = patientUpdateRequest.getName();
-        String lastName = patientUpdateRequest.getLastName();
-        LocalDate dob = patientUpdateRequest.getDob();
-        String contactInfo = patientUpdateRequest.getContactInfo();
-
-        if (name == null || Objects.equals(patient.getName(), name)) {
-            log.error("Name was empty or the same as the old one.");
-            throw new InvalidDataException("Name is not correct or equals to old one.");
-        }
-
-        if (lastName == null || Objects.equals(patient.getLastName(), lastName)) {
-            log.error("LastName was empty or the same as the old one.");
-            throw new InvalidDataException("LastName is not correct or equals to old one.");
-        }
-
-        if (dob == null || Objects.equals(patient.getDob(), dob)) {
-            log.error("Provided DOB was incorrect or the same as the old one.");
-            throw new InvalidDataException("Date of birth is not correct or equals to old one.");
-        }
-
-        if (contactInfo == null || Objects.equals(patient.getContactInfo(), contactInfo)) {
-            log.error("ContactInfo was empty or the same as the old one.");
-            throw new InvalidDataException("ContactInfo is not correct or equals to old one.");
+    public Boolean validateGivenDataForUpdate(final PatientUpdateRequest patientUpdateRequest, final Patient patient) throws InvalidDataException {
+        Field[] fieldsToValidate = patientUpdateRequest.getClass().getDeclaredFields();
+        for (Field field : fieldsToValidate) {
+            try {
+                Object updatedValue = field.get(patientUpdateRequest);
+                Object originalValue = field.get(patient);
+                if (!isFieldValid(updatedValue, originalValue)) {
+                    log.error(field.getName() + " was empty or the same as the old one.");
+                    throw new InvalidDataException(field.getName() + " is not correct or equals to the old one.");
+                }
+            } catch (IllegalAccessException e) {
+                log.error("Error accessing field: " + field.getName());
+            }
         }
         return true;
+    }
+
+    private boolean isFieldValid(Object updatedValue, Object originalValue) {
+        if (updatedValue == null) {
+            return false;
+        }
+        if (updatedValue instanceof String) {
+            return !((String) updatedValue).isEmpty() && !updatedValue.equals(originalValue);
+        } else if (updatedValue instanceof LocalDate) {
+            return !updatedValue.equals(originalValue);
+        }
+        return false;
     }
 }

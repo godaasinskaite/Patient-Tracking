@@ -2,6 +2,7 @@ package com.app.patient_tracker.controller;
 
 
 import com.app.patient_tracker.dto.PatientRequestDto;
+import com.app.patient_tracker.dto.PatientResponseDto;
 import com.app.patient_tracker.dto.PatientUpdateRequest;
 import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Patient;
@@ -12,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -25,11 +28,11 @@ public class PatientController {
 
     @GetMapping("/all")
     public ResponseEntity<?> findAllPatients() throws PatientNotFoundException {
-        var patients = patientService.getAllPatients();
+        List<Patient> patients = patientService.getAllPatients();
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 
-    @GetMapping("/get{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> findPatientById(@PathVariable final Long id) throws PatientNotFoundException {
         Patient patient = patientService.getPatientById(id);
         return ResponseEntity.status(HttpStatus.OK).body(patient);
@@ -38,17 +41,17 @@ public class PatientController {
     @PostMapping("/add")
     public ResponseEntity<?> addNewPatient(@RequestBody final PatientRequestDto patientRequestDto) throws MandatoryFieldsMissingException {
         patientRequestValidator.validatePatientRequest(patientRequestDto);
-        final var patients = patientService.addNewPatient(patientRequestDto);
+        List<PatientResponseDto> patients = patientService.addNewPatient(patientRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 
-    @PatchMapping("/update/{id}")
-    public ResponseEntity<?> updatePatient(@PathVariable Long id, @RequestBody PatientUpdateRequest patientUpdateRequest) throws PatientNotFoundException, InvalidDataException, PatientUpdateException {
+    @PatchMapping("/{id}")
+    public ResponseEntity<?> updatePatient(@PathVariable final Long id, @RequestBody final PatientUpdateRequest patientUpdateRequest) throws PatientNotFoundException, InvalidDataException, PatientUpdateException {
         patientService.updatePatientInfo(id, patientUpdateRequest);
         return ResponseEntity.status(HttpStatus.OK).body("Patient updated successfully.");
     }
 
-    @DeleteMapping("/delete{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePatientById(@PathVariable final Long id) throws DeleteOperationException {
         patientService.deletePatientById(id);
         return ResponseEntity.status(HttpStatus.OK).body("Patient successfully deleted.");

@@ -3,6 +3,7 @@ package com.app.patient_tracker.service;
 import com.app.patient_tracker.dto.AttendanceRequestDto;
 import com.app.patient_tracker.exception.AttendanceMappingException;
 import com.app.patient_tracker.exception.AttendanceNotFoundException;
+import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
 import com.app.patient_tracker.exception.PatientNotFoundException;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
@@ -10,6 +11,7 @@ import com.app.patient_tracker.repository.AttendanceRepository;
 import com.app.patient_tracker.repository.PatientRepository;
 import com.app.patient_tracker.validator.AttendanceRequestValidator;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 @Service
 @Data
 @Slf4j
+@RequiredArgsConstructor
 public class AttendanceService {
 
     private final PatientRepository patientRepository;
@@ -31,14 +34,6 @@ public class AttendanceService {
     private final AttendanceMappingService attendanceMappingService;
     private final PatientService patientService;
 
-    public AttendanceService(PatientRepository patientRepository, AttendanceRepository attendanceRepository, AttendanceRequestValidator attendanceRequestValidator, AttendanceMappingService attendanceMappingService, PatientService patientService) {
-        this.patientRepository = patientRepository;
-        this.attendanceRepository = attendanceRepository;
-        this.attendanceRequestValidator = attendanceRequestValidator;
-        this.attendanceMappingService = attendanceMappingService;
-        this.patientService = patientService;
-    }
-
     /**
      * Method retrieved attendance record from the database by given its unique identifier id.
      *
@@ -46,7 +41,7 @@ public class AttendanceService {
      * @return The attendance object itself with specified id.
      * @throws AttendanceNotFoundException If no attendance record is present by given id.
      */
-    public Attendance findAttendanceById(Long id) throws AttendanceNotFoundException {
+    public Attendance findAttendanceById(final Long id) throws AttendanceNotFoundException {
         log.info("Looking for attendance with id = " + id);
         return attendanceRepository.findById(id)
                 .orElseThrow(() -> new AttendanceNotFoundException("Attendance can not be found."));
@@ -55,14 +50,12 @@ public class AttendanceService {
     /**
      * Method intended for marking the attendance of a patients specific appointment and updating patients next appointment field.
      *
-     * @param id                   Is the unique identifier of the patient whose attendance is to be marked.
      * @param attendanceToUpdateId Is the unique identifier of the attendance record to be updated.
-     * @throws PatientNotFoundException If no patient with specified id is found.
      * @throws AttendanceNotFoundException       If no attendance record is found with specified id.
      */
-    public void markAttendance(Long id, Long attendanceToUpdateId) throws PatientNotFoundException, AttendanceNotFoundException {
-        Patient patient = patientService.getPatientById(id);
+    public void markAttendance(final Long attendanceToUpdateId) throws AttendanceNotFoundException {
         Attendance attendanceToUpdate = findAttendanceById(attendanceToUpdateId);
+        Patient patient = attendanceToUpdate.getPatient();
 
         attendanceToUpdate.setDateOfAttendance(LocalDate.now());
         attendanceToUpdate.setDidAttend(true);
@@ -98,7 +91,7 @@ public class AttendanceService {
      * @throws AttendanceNotFoundException If no attendance records can be detected in database.
      */
     public List<LocalDate> checkSchedule() throws AttendanceNotFoundException {
-        var attendances = getAllAttendances();
+        List<Attendance> attendances = getAllAttendances();
         LocalDate today = LocalDate.now();
 
         return attendances.stream()
@@ -117,15 +110,15 @@ public class AttendanceService {
      * @param id                   Is the unique identifier of patient.
      *
      * @return The attendance entity representing scheduled appointment.
-     * @throws PatientNotFoundException If the patient with specified id is not found.
      * @throws AttendanceMappingException If an error occurs while mapping the attendance
      *                                      request data to an entity or saving the attendance.
      */
-    public Attendance scheduleAppointment(final AttendanceRequestDto attendanceRequestDto, Long id) throws PatientNotFoundException, AttendanceMappingException {
-        try {
+    public Attendance scheduleAppointment(final AttendanceRequestDto attendanceRequestDto, final Long id) throws AttendanceMappingException, PatientNotFoundException, MandatoryFieldsMissingException {
             Patient patientToUpdate = patientService.getPatientById(id);
 
-            attendanceRequestValidator.validateAttendanceRequest(attendanceRequestDto);
+            if (!attendanceRequestValidator.validateAttendanceRequest(attendanceRequestDto)) {
+                throw new AttendanceMappingException("Error mapping attendance");
+            }
             Attendance attendance = attendanceMappingService.mapAttendanceToEntity(attendanceRequestDto);
             attendance.setPatient(patientToUpdate);
             attendance.setDidAttend(false);
@@ -135,8 +128,5 @@ public class AttendanceService {
             patientService.checkForNextAppointment(patientToUpdate);
             log.info("New attendance added to patient.");
             return attendance;
-        } catch (Exception e) {
-            throw new AttendanceMappingException("Error mapping attendance");
-        }
     }
 }

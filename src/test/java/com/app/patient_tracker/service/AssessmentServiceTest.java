@@ -1,16 +1,16 @@
 package com.app.patient_tracker.service;
 
-import com.app.patient_tracker.dto.PatientRequestDto;
-import com.app.patient_tracker.dto.PatientUpdateRequest;
-import com.app.patient_tracker.exception.InvalidDataException;
+import com.app.patient_tracker.dto.AssessmentRequestDto;
+import com.app.patient_tracker.exception.AssessmentNotFoundException;
+import com.app.patient_tracker.exception.AssessmentUpdateException;
+import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
 import com.app.patient_tracker.exception.PatientNotFoundException;
-import com.app.patient_tracker.exception.PatientUpdateException;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.model.Progress;
-import com.app.patient_tracker.repository.PatientRepository;
-import com.app.patient_tracker.validator.PatientUpdateRequestValidator;
+import com.app.patient_tracker.repository.AssessmentRepository;
+import com.app.patient_tracker.validator.AssessmentRequestValidator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,8 +18,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -27,76 +25,48 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
-class PatientServiceTest {
+class AssessmentServiceTest {
 
     @Mock
-    private PatientRepository repository;
-    @Mock
-    private CacheManager cacheManager;
-    @Mock
-    private Cache cache;
-    @Mock
-    private PatientMappingService mappingService;
+    private AssessmentRepository assessmentRepository;
     @InjectMocks
-    private PatientService patientService;
+    private AssessmentService assessmentService;
     @Mock
-    private PatientUpdateRequestValidator patientUpdateRequestValidator;
-
-
-    @Test
-    void checkForNextAppointment() {
-        Patient patient = loadTestData().get(2);
-        when(repository.save(Mockito.any(Patient.class))).thenReturn(patient);
-        patientService.checkForNextAppointment(patient);
-        Assertions.assertEquals(LocalDate.of(2024, 5, 1), patient.getNextAppointment());
-    }
+    private AssessmentMappingService mappingService;
+    @Mock
+    private AssessmentRequestValidator assessmentRequestValidator;
+    @Mock
+    private PatientService patientService;
 
     @Test
-    void getAllPatients() throws PatientNotFoundException {
-        List<Patient> patients = loadTestData();
-        Mockito.when(repository.findAll()).thenReturn(patients);
-        List<Patient> patientsFromDb = patientService.getAllPatients();
-        Assertions.assertNotNull(patientsFromDb);
-    }
+    void assessPatient() throws PatientNotFoundException, MandatoryFieldsMissingException {
 
-    @Test
-    void getPatientById() throws PatientNotFoundException {
         Patient patient = loadTestData().get(0);
-        Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
-        Patient retrievedPatient = patientService.getPatientById(patient.getId());
-        Assertions.assertNotNull(retrievedPatient);
+        AssessmentRequestDto requestDto = AssessmentRequestDto.builder().title("title").points(1).patientId(patient.getId()).build();
+        Assessment assessment = Assessment.builder().id(200L).points(1).title("title").patient(patient).build();
+
+        Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
+        Mockito.when(assessmentRequestValidator.validateAssessmentRequest(requestDto)).thenReturn(true);
+        Mockito.when(mappingService.mapAttendanceToEntity(requestDto)).thenReturn(assessment);
+        Mockito.when(assessmentRepository.save(assessment)).thenReturn(assessment);
+
+        assessmentService.assessPatient(patient.getId(), requestDto);
+        Assertions.assertEquals(3, patient.getAssessments().size());
     }
 
     @Test
-    void updatePatientInfo() throws PatientUpdateException, InvalidDataException, PatientNotFoundException {
-        Patient patient = loadTestData().get(0);
-        PatientUpdateRequest updateRequest = PatientUpdateRequest.builder().contactInfo("1234").name("1234").build();
+    void updateAssessment() throws AssessmentUpdateException, AssessmentNotFoundException {
+        Assessment assessment = loadTestData().get(0).getAssessments().get(0);
+        String newTitle = "newTitle";
+        Integer newPoints = 5;
 
-        Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
-        Mockito.when(patientUpdateRequestValidator.validateGivenDataForUpdate(updateRequest, patient)).thenReturn(true);
-        Mockito.when(repository.save(patient)).thenReturn(patient);
+        Mockito.when(assessmentRepository.findById(assessment.getId())).thenReturn(Optional.of(assessment));
+        Mockito.when(assessmentRepository.save(assessment)).thenReturn(assessment);
 
-        patientService.updatePatientInfo(patient.getId(), updateRequest);
+        assessmentService.updateAssessment(assessment.getId(), newTitle, newPoints);
 
-        Assertions.assertEquals("1234", patient.getContactInfo());
-    }
-
-    @Test
-    void addNewPatient() {
-        List<Patient> patients = loadTestData();
-        Patient newPatient = Patient.builder().name("Name").lastName("LastName").dob(LocalDate.of(1888, 1, 1)).build();
-        PatientRequestDto patientRequest = PatientRequestDto.builder().build();
-
-        Mockito.when(repository.save(newPatient)).thenReturn(newPatient);
-        Mockito.when(mappingService.mapPatientToEntity(patientRequest)).thenReturn(newPatient);
-        Mockito.when(repository.findAll()).thenReturn(patients);
-
-        patientService.addNewPatient(patientRequest);
-
-        Assertions.assertNotNull(newPatient);
+        Assertions.assertEquals(newTitle, assessment.getTitle());
     }
 
 

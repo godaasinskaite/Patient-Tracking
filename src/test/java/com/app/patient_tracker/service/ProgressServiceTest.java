@@ -1,16 +1,12 @@
 package com.app.patient_tracker.service;
 
-import com.app.patient_tracker.dto.PatientRequestDto;
-import com.app.patient_tracker.dto.PatientUpdateRequest;
-import com.app.patient_tracker.exception.InvalidDataException;
+import com.app.patient_tracker.dto.ProgressRequestDto;
 import com.app.patient_tracker.exception.PatientNotFoundException;
-import com.app.patient_tracker.exception.PatientUpdateException;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.model.Progress;
-import com.app.patient_tracker.repository.PatientRepository;
-import com.app.patient_tracker.validator.PatientUpdateRequestValidator;
+import com.app.patient_tracker.repository.ProgressRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,85 +14,46 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class PatientServiceTest {
+class ProgressServiceTest {
 
     @Mock
-    private PatientRepository repository;
-    @Mock
-    private CacheManager cacheManager;
-    @Mock
-    private Cache cache;
-    @Mock
-    private PatientMappingService mappingService;
+    private ProgressRepository progressRepository;
     @InjectMocks
+    private ProgressService progressService;
+    @Mock
     private PatientService patientService;
     @Mock
-    private PatientUpdateRequestValidator patientUpdateRequestValidator;
-
-
-    @Test
-    void checkForNextAppointment() {
-        Patient patient = loadTestData().get(2);
-        when(repository.save(Mockito.any(Patient.class))).thenReturn(patient);
-        patientService.checkForNextAppointment(patient);
-        Assertions.assertEquals(LocalDate.of(2024, 5, 1), patient.getNextAppointment());
-    }
+    private ProgressMappingService progressMappingService;
 
     @Test
-    void getAllPatients() throws PatientNotFoundException {
-        List<Patient> patients = loadTestData();
-        Mockito.when(repository.findAll()).thenReturn(patients);
-        List<Patient> patientsFromDb = patientService.getAllPatients();
-        Assertions.assertNotNull(patientsFromDb);
-    }
-
-    @Test
-    void getPatientById() throws PatientNotFoundException {
+    void fillProgress() throws PatientNotFoundException {
         Patient patient = loadTestData().get(0);
-        Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
-        Patient retrievedPatient = patientService.getPatientById(patient.getId());
-        Assertions.assertNotNull(retrievedPatient);
+        ProgressRequestDto progressRequest = ProgressRequestDto.builder().build();
+        Progress newProgress = Progress.builder().build();
+
+        Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
+        Mockito.when(progressMappingService.mapProgressToEntity(progressRequest)).thenReturn(newProgress);
+        Mockito.when(progressRepository.save(newProgress)).thenReturn(newProgress);
+
+        progressService.fillProgress(patient.getId(), progressRequest);
+
+        Assertions.assertEquals(3, patient.getPatientProgress().size());
     }
 
     @Test
-    void updatePatientInfo() throws PatientUpdateException, InvalidDataException, PatientNotFoundException {
+    void getProgressesByPatientId() throws PatientNotFoundException {
         Patient patient = loadTestData().get(0);
-        PatientUpdateRequest updateRequest = PatientUpdateRequest.builder().contactInfo("1234").name("1234").build();
-
-        Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
-        Mockito.when(patientUpdateRequestValidator.validateGivenDataForUpdate(updateRequest, patient)).thenReturn(true);
-        Mockito.when(repository.save(patient)).thenReturn(patient);
-
-        patientService.updatePatientInfo(patient.getId(), updateRequest);
-
-        Assertions.assertEquals("1234", patient.getContactInfo());
-    }
-
-    @Test
-    void addNewPatient() {
-        List<Patient> patients = loadTestData();
-        Patient newPatient = Patient.builder().name("Name").lastName("LastName").dob(LocalDate.of(1888, 1, 1)).build();
-        PatientRequestDto patientRequest = PatientRequestDto.builder().build();
-
-        Mockito.when(repository.save(newPatient)).thenReturn(newPatient);
-        Mockito.when(mappingService.mapPatientToEntity(patientRequest)).thenReturn(newPatient);
-        Mockito.when(repository.findAll()).thenReturn(patients);
-
-        patientService.addNewPatient(patientRequest);
-
-        Assertions.assertNotNull(newPatient);
+        Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
+        progressService.getProgressesByPatientId(patient.getId());
+        Assertions.assertEquals(2, patient.getPatientProgress().size());
     }
 
 

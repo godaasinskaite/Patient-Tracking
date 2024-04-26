@@ -9,10 +9,16 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class AssessmentRequestValidator {
 
-    public void validateAssessmentRequest(final AssessmentRequestDto assessmentRequestDto) throws MandatoryFieldsMissingException {
-        if (assessmentRequestDto == null || assessmentRequestDto.getPoints() == null || assessmentRequestDto.getTitle() == null) {
+    public Boolean validateAssessmentRequest(final AssessmentRequestDto assessmentRequestDto) throws MandatoryFieldsMissingException {
+        if (isAssessmentRequestValid(assessmentRequestDto)) {
             log.error("Assessment request was empty or mandatory fields were missing");
             throw new MandatoryFieldsMissingException("Mandatory fields are missing.");
+        } else {
+            return true;
         }
+    }
+
+    private static boolean isAssessmentRequestValid(AssessmentRequestDto assessmentRequestDto) {
+        return assessmentRequestDto == null || assessmentRequestDto.getPoints() == null || assessmentRequestDto.getTitle() == null;
     }
 }

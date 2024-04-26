@@ -46,7 +46,7 @@ public class PatientService {
      *                <p>
      *                Updates the next appointment date for the patient or sets null if no suitable appointment is found.
      */
-    public void checkForNextAppointment(Patient patient) {
+    public void checkForNextAppointment(final Patient patient) {
         LocalDate localDate = patient.getAttendances().stream()
                 .filter(attendance -> !attendance.getDidAttend() && attendance.getDateOfAttendance().isAfter(LocalDate.now()))
                 .map(Attendance::getDateOfAttendance)
@@ -67,7 +67,7 @@ public class PatientService {
      */
     public List<Patient> getAllPatients() throws PatientNotFoundException {
         log.info("Looking for patients in DB.");
-        var patients = patientRepository.findAll();
+        List<Patient> patients = patientRepository.findAll();
 
         if (patients.isEmpty()) {
             log.error("DB is empty. No patients were found.");
@@ -85,7 +85,7 @@ public class PatientService {
      * @return The patient object itself.
      * @throws PatientNotFoundException If no patients with specified id is found in the database.
      */
-    public Patient getPatientById(Long id) throws PatientNotFoundException {
+    public Patient getPatientById(final Long id) throws PatientNotFoundException {
         log.info("Looking for patient with id= " + id + " in the DB.");
         //TODO: caching
         return patientRepository.findById(id)
@@ -103,7 +103,7 @@ public class PatientService {
         Patient patient = mappingService.mapPatientToEntity(patientDto);
         patientRepository.save(patient);
         log.info("New patient was added.");
-        var allPatients = patientRepository.findAll();
+        List<Patient> allPatients = patientRepository.findAll();
         return mappingService.mapPatientsToResponse(allPatients);
     }
 
@@ -117,7 +117,7 @@ public class PatientService {
      * @throws PatientNotFoundException If no patient with specified ID is found in the database.
      */
     @Transactional
-    public void updatePatientInfo(Long patientId, PatientUpdateRequest patientUpdateRequest) throws InvalidDataException, PatientUpdateException, PatientNotFoundException {
+    public void updatePatientInfo(final Long patientId, final PatientUpdateRequest patientUpdateRequest) throws InvalidDataException, PatientUpdateException, PatientNotFoundException {
         Patient patient = getPatientById(patientId);
 
         log.info("Validating given data for update.");
@@ -142,7 +142,7 @@ public class PatientService {
      * @param id Is the unique identifier of the patient to be deleted.
      * @throws DeleteOperationException If an error occurs while deleting a patient from the database.
      */
-    public void deletePatientById(Long id) throws DeleteOperationException {
+    public void deletePatientById(final Long id) throws DeleteOperationException {
         try {
             log.info("Looking for patient with id = " + id + " in the DB.");
             patientRepository.deleteById(id);

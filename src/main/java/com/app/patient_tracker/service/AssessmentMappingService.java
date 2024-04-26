@@ -1,4 +1,4 @@
-package com.app.patient_tracker.validator;
+package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.AssessmentRequestDto;
 import com.app.patient_tracker.model.Assessment;

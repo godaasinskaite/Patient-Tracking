@@ -6,6 +6,7 @@ import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.model.Progress;
 import com.app.patient_tracker.repository.ProgressRepository;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,17 +18,12 @@ import java.util.List;
 @Service
 @Slf4j
 @Data
+@RequiredArgsConstructor
 public class ProgressService {
 
     private final ProgressRepository progressRepository;
     private final ProgressMappingService progressMappingService;
     private final PatientService patientService;
-
-    public ProgressService(ProgressRepository progressRepository, ProgressMappingService progressMappingService, PatientService patientService) {
-        this.progressRepository = progressRepository;
-        this.progressMappingService = progressMappingService;
-        this.patientService = patientService;
-    }
 
     /**
      * Method fills out progress information for a patient.
@@ -36,10 +32,11 @@ public class ProgressService {
      * @param progressRequestDto The progress request FTO containing information to fill out progress.
      * @throws PatientNotFoundException If no patient is found with specified id.
      */
-    public void fillProgress(Long patientId, ProgressRequestDto progressRequestDto) throws PatientNotFoundException {
+    public void fillProgress(final Long patientId, final ProgressRequestDto progressRequestDto) throws PatientNotFoundException {
         Patient patient = patientService.getPatientById(patientId);
         Progress progress = progressMappingService.mapProgressToEntity(progressRequestDto);
         progress.setPatient(patient);
+        patient.getPatientProgress().add(progress);
         progressRepository.save(progress);
     }
 
@@ -50,7 +47,7 @@ public class ProgressService {
      * @return A list of progress records associated with the patient.
      * @throws PatientNotFoundException If no patient with specified id is found.
      */
-    public List<Progress> getProgressesByPatientId(Long id) throws PatientNotFoundException {
+    public List<Progress> getProgressesByPatientId(final Long id) throws PatientNotFoundException {
         Patient patient = patientService.getPatientById(id);
         return patient.getPatientProgress();
     }

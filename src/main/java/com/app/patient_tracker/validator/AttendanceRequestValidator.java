@@ -11,10 +11,16 @@ import java.time.LocalDate;
 @Slf4j
 public class AttendanceRequestValidator {
 
-    public void validateAttendanceRequest(final AttendanceRequestDto attendanceRequestDto) throws MandatoryFieldsMissingException {
-        if (attendanceRequestDto == null || attendanceRequestDto.getDateOfAttendance().isBefore(LocalDate.now())) {
+    public Boolean validateAttendanceRequest(final AttendanceRequestDto attendanceRequestDto) throws MandatoryFieldsMissingException {
+        if (isAttendanceRequestValid(attendanceRequestDto)) {
             log.error("Attendance request was empty, mandatory fields missing or wrong date was give.");
             throw new MandatoryFieldsMissingException("Mandatory fields missing or they are incorrect.");
+        } else {
+            return true;
         }
+    }
+
+    private static boolean isAttendanceRequestValid(AttendanceRequestDto attendanceRequestDto) {
+        return attendanceRequestDto == null || attendanceRequestDto.getDateOfAttendance().isBefore(LocalDate.now());
     }
 }
