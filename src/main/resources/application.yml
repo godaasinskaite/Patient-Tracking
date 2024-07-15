@@ -1,16 +1,21 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/patient
-    username: username
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: sa
     password: password
   jpa:
     hibernate:
       ddl-auto: none #with flyway none
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
     show-sql: true
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
 main:
   web-application-type: servlet
 
@@ -24,7 +29,7 @@ flyway:
   schemas:
     patient
   url: jdbc:postgresql://localhost/patient
-  user: username
+  user: godaasinskaite
   password: password
   table: patient_version
   baseline-on-migrate: true

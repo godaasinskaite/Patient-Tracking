@@ -15,7 +15,7 @@
 	<description>Patient tracking app</description>
 	<properties>
 		<java.version>11</java.version>
-		<flyway.user>username</flyway.user>
+		<flyway.user>godaasinskaite</flyway.user>
 		<flyway.password></flyway.password>
 		<flyway.schemas>patient</flyway.schemas>
 	</properties>
@@ -30,8 +30,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
