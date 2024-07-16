@@ -36,7 +36,7 @@ This is a back-end application developed using Java 11 and Spring Boot. It provi
 
  - Run command in Terminal, Command Prompt or PowerShell "git clone https://github.com/godaasinskaite/Patient-Tracking.git"
  - Open project with preferred IDE
- - Choose the appropriate branch: use the dev branch for the H2 database
+ - Choose the appropriate branch: use the dev branch for full functionality
  - Then, run the main method in PatientTrackingApplication.class located at src/main/java/com/app/patient_tracker
 
  - Use http://localhost:1453/swagger-ui/ to test the API endpoints.
@@ -45,5 +45,5 @@ This is a back-end application developed using Java 11 and Spring Boot. It provi
  - Clone the repository "git clone https://github.com/godaasinskaite/Patient-Tracking.git"
  - Navigate to project direction "cd /path/to/your/project"
  - Choose appropriate branch:
-   - "git checkout dev"  # for H2 database
+   - "git checkout dev"  # for full functionality
  - Run the application with Maven "mvn clean spring-boot:run"
