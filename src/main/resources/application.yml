@@ -6,7 +6,7 @@ spring:
     password: password
   jpa:
     hibernate:
-      ddl-auto: none #with flyway none
+      ddl-auto: none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.H2Dialect
@@ -16,25 +16,19 @@ spring:
     console:
       enabled: true
       path: /h2-console
-main:
-  web-application-type: servlet
 
 flyway:
   enabled: true
   locations:
-#    - db/migration/V1__Create_Assessment_Table.sql
-#    - db/migration/V2__Create_Attendance_Table.sql
-#    - db/migration/V3__Create_Progress_Table.sql
-#    - db/migration/V4__Create_Patient_Table.sql
-  schemas:
-    patient
-  url: jdbc:postgresql://localhost/patient
-  user: godaasinskaite
+    - classpath:db/migration
+  url: jdbc:h2:mem:testdb
+  user: sa
   password: password
-  table: patient_version
+  schemas:
+    - public
+  table: flyway_schema_history
   baseline-on-migrate: true
   validate-on-migrate: true
-
 
 server:
   port: 1453
