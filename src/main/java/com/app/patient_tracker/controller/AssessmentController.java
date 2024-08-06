@@ -23,14 +23,14 @@ public class AssessmentController {
 
     @PostMapping("/{id}")
     public ResponseEntity<?> assessPatient(@PathVariable final Long id, @RequestBody final AssessmentRequestDto assessmentRequestDto) throws MandatoryFieldsMissingException, PatientNotFoundException {
-        Assessment assessment = assessmentService.assessPatient(id, assessmentRequestDto);
+        final var assessment = assessmentService.assessPatient(id, assessmentRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(assessment);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> updateAssessment(@PathVariable final Long id,
-                                              @RequestParam (required = false) final String title,
-                                              @RequestParam (required = false) final Integer points) throws AssessmentUpdateException, AssessmentNotFoundException {
+                                              @RequestParam(required = false) final String title,
+                                              @RequestParam(required = false) final Integer points) throws AssessmentUpdateException, AssessmentNotFoundException {
         assessmentService.updateAssessment(id, title, points);
         return ResponseEntity.status(HttpStatus.OK).body("Assessment updated.");
     }

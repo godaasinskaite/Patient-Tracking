@@ -1,6 +1,5 @@
 package com.app.patient_tracker.dto;
 
-import com.app.patient_tracker.model.Patient;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,5 +8,6 @@ import lombok.Data;
 public class ProgressRequestDto {
 
     private String notes;
+
     private Long patientId;
 }

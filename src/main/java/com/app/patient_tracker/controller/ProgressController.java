@@ -28,7 +28,7 @@ public class ProgressController {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getAllPatientProgresses(@PathVariable final Long id) throws PatientNotFoundException {
-        List<Progress> progresses = progressService.getProgressesByPatientId(id);
+        final var progresses = progressService.getProgressesByPatientId(id);
         return ResponseEntity.status(HttpStatus.OK).body(progresses);
     }
 }

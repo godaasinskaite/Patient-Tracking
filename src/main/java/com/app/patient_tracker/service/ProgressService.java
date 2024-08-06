@@ -28,13 +28,13 @@ public class ProgressService {
     /**
      * Method fills out progress information for a patient.
      *
-     * @param patientId Is the unique identifier of a patient for whom progress is being filled.
+     * @param patientId          Is the unique identifier of a patient for whom progress is being filled.
      * @param progressRequestDto The progress request FTO containing information to fill out progress.
      * @throws PatientNotFoundException If no patient is found with specified id.
      */
     public void fillProgress(final Long patientId, final ProgressRequestDto progressRequestDto) throws PatientNotFoundException {
-        Patient patient = patientService.getPatientById(patientId);
-        Progress progress = progressMappingService.mapProgressToEntity(progressRequestDto);
+        final Patient patient = patientService.getPatientById(patientId);
+        final Progress progress = progressMappingService.mapProgressToEntity(progressRequestDto);
         progress.setPatient(patient);
         patient.getPatientProgress().add(progress);
         progressRepository.save(progress);
@@ -48,7 +48,7 @@ public class ProgressService {
      * @throws PatientNotFoundException If no patient with specified id is found.
      */
     public List<Progress> getProgressesByPatientId(final Long id) throws PatientNotFoundException {
-        Patient patient = patientService.getPatientById(id);
+        final Patient patient = patientService.getPatientById(id);
         return patient.getPatientProgress();
     }
 }

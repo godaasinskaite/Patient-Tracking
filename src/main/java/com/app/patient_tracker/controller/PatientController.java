@@ -28,20 +28,20 @@ public class PatientController {
 
     @GetMapping("/all")
     public ResponseEntity<?> findAllPatients() throws PatientNotFoundException {
-        List<Patient> patients = patientService.getAllPatients();
+        final var patients = patientService.getAllPatients();
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> findPatientById(@PathVariable final Long id) throws PatientNotFoundException {
-        Patient patient = patientService.getPatientById(id);
+        final var patient = patientService.getPatientById(id);
         return ResponseEntity.status(HttpStatus.OK).body(patient);
     }
 
     @PostMapping("/add")
     public ResponseEntity<?> addNewPatient(@RequestBody final PatientRequestDto patientRequestDto) throws MandatoryFieldsMissingException {
         patientRequestValidator.validatePatientRequest(patientRequestDto);
-        List<PatientResponseDto> patients = patientService.addNewPatient(patientRequestDto);
+        final var patients = patientService.addNewPatient(patientRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 

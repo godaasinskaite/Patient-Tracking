@@ -29,14 +29,14 @@ public class Patient {
     private String name;
 
     @Column(nullable = false,
-    name = "lastname")
+            name = "lastname")
     private String lastName;
 
     @Column(nullable = false)
     private LocalDate dob;
 
     @Column(nullable = false,
-    name = "contactinfo")
+            name = "contactinfo")
     private String contactInfo;
 
     @OneToMany(mappedBy = "patient", cascade = CascadeType.PERSIST)
@@ -51,7 +51,7 @@ public class Patient {
     @JsonManagedReference
     private List<Progress> patientProgress = new ArrayList<>();
 
-    @Column (name = "nextappointment")
+    @Column(name = "nextappointment")
     private LocalDate nextAppointment;
 
     @Override
@@ -63,9 +63,4 @@ public class Patient {
                 ", contactInfo='" + contactInfo + '\'' +
                 '}';
     }
-
-    //    attendances.stream()
-//                .filter(attendance -> !attendance.getDidAttend() && attendance.getDateOfAttendance().isAfter(LocalDate.now()))
-//                .map(Attendance::getDateOfAttendance)
-//                .findFirst().orElse(null);
 }

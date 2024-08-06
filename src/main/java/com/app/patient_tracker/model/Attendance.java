@@ -26,10 +26,10 @@ public class Attendance {
     private Boolean didAttend = false;
 
     @Column(nullable = false,
-    name = "dateofattendance")
+            name = "dateofattendance")
     private LocalDate dateOfAttendance;
 
-    @ManyToOne (cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "patient_id")
     @JsonBackReference
     private Patient patient;

@@ -13,6 +13,7 @@ public class PatientMappingService {
     /**
      * Method to map api patient request to an entity suitable for database storage.
      * Creates new Patient entity using the data from DTO request.
+     *
      * @param patientDto represents request class containing data.
      * @return The mapped Patient entity.
      */
@@ -37,7 +38,7 @@ public class PatientMappingService {
      * @return A list of PatientResponseDto objects containing mapped patient information.
      */
     public List<PatientResponseDto> mapPatientsToResponse(final List<Patient> patients) {
-        List<PatientResponseDto> mappedPatients = new ArrayList<>();
+        final List<PatientResponseDto> mappedPatients = new ArrayList<>();
 
         for (Patient patient : patients) {
             PatientResponseDto dto = PatientResponseDto.builder()

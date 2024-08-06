@@ -8,7 +8,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class AttendanceRequestDto {
-    private LocalDate dateOfAttendance;
 
+    private LocalDate dateOfAttendance;
     private Long patientId;
 }

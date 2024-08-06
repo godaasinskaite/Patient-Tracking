@@ -14,7 +14,7 @@ import java.time.LocalDate;
 public class PatientUpdateRequestValidator {
 
     public Boolean validateGivenDataForUpdate(final PatientUpdateRequest patientUpdateRequest, final Patient patient) throws InvalidDataException {
-        Field[] fieldsToValidate = patientUpdateRequest.getClass().getDeclaredFields();
+        final Field[] fieldsToValidate = patientUpdateRequest.getClass().getDeclaredFields();
         for (Field field : fieldsToValidate) {
             try {
                 Object updatedValue = field.get(patientUpdateRequest);

@@ -26,9 +26,10 @@ public class AttendanceController {
 
     @GetMapping("/all")
     public ResponseEntity<?> getAllAttendances() throws AttendanceNotFoundException {
-        List<Attendance> attendances = attendanceService.getAllAttendances();
+        final var attendances = attendanceService.getAllAttendances();
         return ResponseEntity.status(HttpStatus.OK).body(attendances);
     }
+
     @PatchMapping("/{attendanceId}")
     public ResponseEntity<?> markAttendance(@PathVariable final Long attendanceId) throws PatientNotFoundException, AttendanceNotFoundException {
         attendanceService.markAttendance(attendanceId);
@@ -37,13 +38,13 @@ public class AttendanceController {
 
     @GetMapping("/schedule")
     public ResponseEntity<?> checkSchedule() throws AttendanceNotFoundException {
-        List<LocalDate> upcomingOccupationDates = attendanceService.checkSchedule();
+        final var upcomingOccupationDates = attendanceService.checkSchedule();
         return ResponseEntity.status(HttpStatus.OK).body(upcomingOccupationDates);
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<?> scheduleAppointment(@PathVariable final Long PatientId, @RequestBody final AttendanceRequestDto attendanceRequestDto) throws AttendanceMappingException, PatientNotFoundException, MandatoryFieldsMissingException {
-        Attendance attendance = attendanceService.scheduleAppointment(attendanceRequestDto, PatientId);
+        final var attendance = attendanceService.scheduleAppointment(attendanceRequestDto, PatientId);
         return ResponseEntity.status(HttpStatus.OK).body(attendance);
     }
 }

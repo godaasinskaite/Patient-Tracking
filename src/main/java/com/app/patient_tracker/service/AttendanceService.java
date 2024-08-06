@@ -51,11 +51,11 @@ public class AttendanceService {
      * Method intended for marking the attendance of a patients specific appointment and updating patients next appointment field.
      *
      * @param attendanceToUpdateId Is the unique identifier of the attendance record to be updated.
-     * @throws AttendanceNotFoundException       If no attendance record is found with specified id.
+     * @throws AttendanceNotFoundException If no attendance record is found with specified id.
      */
     public void markAttendance(final Long attendanceToUpdateId) throws AttendanceNotFoundException {
-        Attendance attendanceToUpdate = findAttendanceById(attendanceToUpdateId);
-        Patient patient = attendanceToUpdate.getPatient();
+        final Attendance attendanceToUpdate = findAttendanceById(attendanceToUpdateId);
+        final Patient patient = attendanceToUpdate.getPatient();
 
         attendanceToUpdate.setDateOfAttendance(LocalDate.now());
         attendanceToUpdate.setDidAttend(true);
@@ -73,7 +73,7 @@ public class AttendanceService {
      */
     public List<Attendance> getAllAttendances() throws AttendanceNotFoundException {
         log.info("Looking for attendances in the DB.");
-        List<Attendance> attendances = attendanceRepository.findAll();
+        final List<Attendance> attendances = attendanceRepository.findAll();
 
         if (attendances.isEmpty()) {
             log.error("No attendances were found in the DB.");
@@ -91,8 +91,8 @@ public class AttendanceService {
      * @throws AttendanceNotFoundException If no attendance records can be detected in database.
      */
     public List<LocalDate> checkSchedule() throws AttendanceNotFoundException {
-        List<Attendance> attendances = getAllAttendances();
-        LocalDate today = LocalDate.now();
+        final List<Attendance> attendances = getAllAttendances();
+        final LocalDate today = LocalDate.now();
 
         return attendances.stream()
                 .filter(attendance -> !attendance.getDidAttend() && attendance.getDateOfAttendance().isAfter(today))
@@ -108,25 +108,24 @@ public class AttendanceService {
      * @param attendanceRequestDto The attendance request data containing
      *                             information about the appointment.
      * @param id                   Is the unique identifier of patient.
-     *
      * @return The attendance entity representing scheduled appointment.
      * @throws AttendanceMappingException If an error occurs while mapping the attendance
-     *                                      request data to an entity or saving the attendance.
+     *                                    request data to an entity or saving the attendance.
      */
     public Attendance scheduleAppointment(final AttendanceRequestDto attendanceRequestDto, final Long id) throws AttendanceMappingException, PatientNotFoundException, MandatoryFieldsMissingException {
-            Patient patientToUpdate = patientService.getPatientById(id);
+        final Patient patientToUpdate = patientService.getPatientById(id);
 
-            if (!attendanceRequestValidator.validateAttendanceRequest(attendanceRequestDto)) {
-                throw new AttendanceMappingException("Error mapping attendance");
-            }
-            Attendance attendance = attendanceMappingService.mapAttendanceToEntity(attendanceRequestDto);
-            attendance.setPatient(patientToUpdate);
-            attendance.setDidAttend(false);
-            attendanceRepository.save(attendance);
+        if (!attendanceRequestValidator.validateAttendanceRequest(attendanceRequestDto)) {
+            throw new AttendanceMappingException("Error mapping attendance");
+        }
+        final Attendance attendance = attendanceMappingService.mapAttendanceToEntity(attendanceRequestDto);
+        attendance.setPatient(patientToUpdate);
+        attendance.setDidAttend(false);
+        attendanceRepository.save(attendance);
 
-            patientToUpdate.getAttendances().add(attendance);
-            patientService.checkForNextAppointment(patientToUpdate);
-            log.info("New attendance added to patient.");
-            return attendance;
+        patientToUpdate.getAttendances().add(attendance);
+        patientService.checkForNextAppointment(patientToUpdate);
+        log.info("New attendance added to patient.");
+        return attendance;
     }
 }

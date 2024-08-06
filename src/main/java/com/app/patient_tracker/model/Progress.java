@@ -23,7 +23,7 @@ public class Progress {
     @Column
     private String notes;
 
-    @ManyToOne (cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "patient_id")
     @JsonBackReference
     private Patient patient;

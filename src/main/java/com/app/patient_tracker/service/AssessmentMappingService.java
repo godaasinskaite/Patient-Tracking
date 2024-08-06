@@ -10,6 +10,7 @@ public class AssessmentMappingService {
     /**
      * Method to map api assessment request to an entity suitable for database storage.
      * Creates new Assessment entity using the data from DTO request.
+     *
      * @param assessmentRequestDto represents request class containing data.
      * @return The mapped Assessment entity.
      */

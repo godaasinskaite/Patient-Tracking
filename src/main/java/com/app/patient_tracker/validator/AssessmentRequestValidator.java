@@ -18,7 +18,7 @@ public class AssessmentRequestValidator {
         }
     }
 
-    private static boolean isAssessmentRequestValid(AssessmentRequestDto assessmentRequestDto) {
+    private static boolean isAssessmentRequestValid(final AssessmentRequestDto assessmentRequestDto) {
         return assessmentRequestDto == null || assessmentRequestDto.getPoints() == null || assessmentRequestDto.getTitle() == null;
     }
 }

@@ -47,7 +47,7 @@ public class PatientService {
      *                Updates the next appointment date for the patient or sets null if no suitable appointment is found.
      */
     public void checkForNextAppointment(final Patient patient) {
-        LocalDate localDate = patient.getAttendances().stream()
+        final LocalDate localDate = patient.getAttendances().stream()
                 .filter(attendance -> !attendance.getDidAttend() && attendance.getDateOfAttendance().isAfter(LocalDate.now()))
                 .map(Attendance::getDateOfAttendance)
                 .findFirst()
@@ -67,7 +67,7 @@ public class PatientService {
      */
     public List<Patient> getAllPatients() throws PatientNotFoundException {
         log.info("Looking for patients in DB.");
-        List<Patient> patients = patientRepository.findAll();
+        final List<Patient> patients = patientRepository.findAll();
 
         if (patients.isEmpty()) {
             log.error("DB is empty. No patients were found.");
@@ -100,10 +100,10 @@ public class PatientService {
      * @return A list of patient response DTOs after adding new patient.
      */
     public List<PatientResponseDto> addNewPatient(final PatientRequestDto patientDto) {
-        Patient patient = mappingService.mapPatientToEntity(patientDto);
+        final Patient patient = mappingService.mapPatientToEntity(patientDto);
         patientRepository.save(patient);
         log.info("New patient was added.");
-        List<Patient> allPatients = patientRepository.findAll();
+        final List<Patient> allPatients = patientRepository.findAll();
         return mappingService.mapPatientsToResponse(allPatients);
     }
 
@@ -118,10 +118,10 @@ public class PatientService {
      */
     @Transactional
     public void updatePatientInfo(final Long patientId, final PatientUpdateRequest patientUpdateRequest) throws InvalidDataException, PatientUpdateException, PatientNotFoundException {
-        Patient patient = getPatientById(patientId);
+        final Patient patient = getPatientById(patientId);
 
         log.info("Validating given data for update.");
-        Boolean validated = patientUpdateDataValidator.validateGivenDataForUpdate(patientUpdateRequest, patient);
+        final Boolean validated = patientUpdateDataValidator.validateGivenDataForUpdate(patientUpdateRequest, patient);
 
         if (validated) {
             patient.setName(patientUpdateRequest.getName());

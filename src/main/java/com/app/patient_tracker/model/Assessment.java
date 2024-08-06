@@ -25,7 +25,7 @@ public class Assessment {
     @Column(nullable = false)
     private Integer points;
 
-    @ManyToOne (cascade = CascadeType.PERSIST)
+    @ManyToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "patient_id")
     @JsonBackReference
     private Patient patient;

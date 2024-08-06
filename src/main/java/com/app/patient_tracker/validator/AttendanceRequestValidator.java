@@ -20,7 +20,7 @@ public class AttendanceRequestValidator {
         }
     }
 
-    private static boolean isAttendanceRequestValid(AttendanceRequestDto attendanceRequestDto) {
+    private static boolean isAttendanceRequestValid(final AttendanceRequestDto attendanceRequestDto) {
         return attendanceRequestDto == null || attendanceRequestDto.getDateOfAttendance().isBefore(LocalDate.now());
     }
 }

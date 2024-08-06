@@ -11,6 +11,7 @@ public class AttendanceMappingService {
     /**
      * Method to map api attendance request to an entity suitable for database storage.
      * Creates new Attendance entity using the data from DTO request.
+     *
      * @param attendanceDto represents request class containing data.
      * @return The mapped Attendance entity.
      */
