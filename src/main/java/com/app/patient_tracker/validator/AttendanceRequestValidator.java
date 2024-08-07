@@ -1,7 +1,8 @@
 package com.app.patient_tracker.validator;
 
 import com.app.patient_tracker.dto.AttendanceRequestDto;
-import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
+import com.app.patient_tracker.exception.ApplicationException;
+import com.app.patient_tracker.exception.ErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -11,16 +12,17 @@ import java.time.LocalDate;
 @Slf4j
 public class AttendanceRequestValidator {
 
-    public Boolean validateAttendanceRequest(final AttendanceRequestDto attendanceRequestDto) throws MandatoryFieldsMissingException {
-        if (isAttendanceRequestValid(attendanceRequestDto)) {
-            log.error("Attendance request was empty, mandatory fields missing or wrong date was give.");
-            throw new MandatoryFieldsMissingException("Mandatory fields missing or they are incorrect.");
-        } else {
-            return true;
+    public void validateAttendanceRequest(final AttendanceRequestDto attendanceRequestDto) throws ApplicationException {
+        if (attendanceRequestDto == null) {
+            log.error("Attendance request was empty.");
+            throw new ApplicationException("Attendance request is empty.", ErrorCode.ATTENDANCE_REQUEST_EXCEPTION);
         }
+        validateAttendanceDate(attendanceRequestDto.getDateOfAttendance());
     }
 
-    private static boolean isAttendanceRequestValid(final AttendanceRequestDto attendanceRequestDto) {
-        return attendanceRequestDto == null || attendanceRequestDto.getDateOfAttendance().isBefore(LocalDate.now());
+    private void validateAttendanceDate(LocalDate date) throws ApplicationException {
+        if (date.isBefore(LocalDate.now())) {
+            throw new ApplicationException("Wrong attendance date.", ErrorCode.ATTENDANCE_REQUEST_EXCEPTION);
+        }
     }
 }

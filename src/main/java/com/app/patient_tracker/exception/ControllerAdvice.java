@@ -1,64 +1,23 @@
 package com.app.patient_tracker.exception;
 
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
+
 @RestControllerAdvice
+@Slf4j
 public class ControllerAdvice {
+    @ExceptionHandler(ApplicationException.class)
+    public ResponseEntity<ErrorResponse> handleApplicationException(ApplicationException e) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .message(e.getMessage())
+                .errorCode(e.getErrorCode())
+                .timestamp(LocalDateTime.now())
+                .build();
 
-    @ExceptionHandler(PatientNotFoundException.class)
-    public ResponseEntity<?> handlePatientNotFoundException(PatientNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(DeleteOperationException.class)
-    public ResponseEntity<?> handleDeleteOperationException(DeleteOperationException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(AttendanceNotFoundException.class)
-    public ResponseEntity<?> handleAttendanceNotFoundException(AttendanceNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(MandatoryFieldsMissingException.class)
-    public ResponseEntity<?> handleMandatoryFieldsMissingException(MandatoryFieldsMissingException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(PatientUpdateException.class)
-    public ResponseEntity<?> handlePatientUpdateException(PatientUpdateException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(InvalidDataException.class)
-    public ResponseEntity<?> handleInvalidDataException(InvalidDataException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(AttendanceMappingException.class)
-    public ResponseEntity<?> handleAttendanceMappingException(AttendanceMappingException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(AssessmentNotFoundException.class)
-    public ResponseEntity<?> handleAssessmentNotFoundException(AssessmentNotFoundException e) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(e.getMessage());
-    }
-
-    @ExceptionHandler(AssessmentUpdateException.class)
-    public ResponseEntity<?> handleAssessmentUpdateException(AssessmentUpdateException e) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(e.getMessage());
+        return ResponseEntity.status(e.getErrorCode().getHttpStatus()).body(errorResponse);
     }
 }

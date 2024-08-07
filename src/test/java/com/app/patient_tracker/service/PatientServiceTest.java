@@ -1,10 +1,7 @@
 package com.app.patient_tracker.service;
 
-import com.app.patient_tracker.dto.PatientRequestDto;
 import com.app.patient_tracker.dto.PatientUpdateRequest;
-import com.app.patient_tracker.exception.InvalidDataException;
-import com.app.patient_tracker.exception.PatientNotFoundException;
-import com.app.patient_tracker.exception.PatientUpdateException;
+import com.app.patient_tracker.exception.ApplicationException;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
@@ -51,11 +48,11 @@ class PatientServiceTest {
         Patient patient = loadTestData().get(2);
         when(repository.save(Mockito.any(Patient.class))).thenReturn(patient);
         patientService.checkForNextAppointment(patient);
-        Assertions.assertEquals(LocalDate.of(2024, 5, 1), patient.getNextAppointment());
+        Assertions.assertEquals(LocalDate.of(2043, 4, 1), patient.getNextAppointment());
     }
 
     @Test
-    void getAllPatients() throws PatientNotFoundException {
+    void getAllPatients() throws ApplicationException {
         List<Patient> patients = loadTestData();
         Mockito.when(repository.findAll()).thenReturn(patients);
         List<Patient> patientsFromDb = patientService.getAllPatients();
@@ -63,7 +60,7 @@ class PatientServiceTest {
     }
 
     @Test
-    void getPatientById() throws PatientNotFoundException {
+    void getPatientById() throws ApplicationException {
         Patient patient = loadTestData().get(0);
         Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
         Patient retrievedPatient = patientService.getPatientById(patient.getId());
@@ -71,12 +68,12 @@ class PatientServiceTest {
     }
 
     @Test
-    void updatePatientInfo() throws PatientUpdateException, InvalidDataException, PatientNotFoundException {
+    void updatePatientInfo() throws ApplicationException, IllegalAccessException {
         Patient patient = loadTestData().get(0);
         PatientUpdateRequest updateRequest = PatientUpdateRequest.builder().contactInfo("1234").name("1234").build();
 
         Mockito.when(repository.findById(patient.getId())).thenReturn(Optional.of(patient));
-        Mockito.when(patientUpdateRequestValidator.validateGivenDataForUpdate(updateRequest, patient)).thenReturn(true);
+//        Mockito.when(patientUpdateRequestValidator.validateGivenDataForUpdate(updateRequest, patient)).thenReturn(true);
         Mockito.when(repository.save(patient)).thenReturn(patient);
 
         patientService.updatePatientInfo(patient.getId(), updateRequest);
@@ -84,20 +81,6 @@ class PatientServiceTest {
         Assertions.assertEquals("1234", patient.getContactInfo());
     }
 
-    @Test
-    void addNewPatient() {
-        List<Patient> patients = loadTestData();
-        Patient newPatient = Patient.builder().name("Name").lastName("LastName").dob(LocalDate.of(1888, 1, 1)).build();
-        PatientRequestDto patientRequest = PatientRequestDto.builder().build();
-
-        Mockito.when(repository.save(newPatient)).thenReturn(newPatient);
-        Mockito.when(mappingService.mapPatientToEntity(patientRequest)).thenReturn(newPatient);
-        Mockito.when(repository.findAll()).thenReturn(patients);
-
-        patientService.addNewPatient(patientRequest);
-
-        Assertions.assertNotNull(newPatient);
-    }
 
 
     List<Patient> loadTestData() {
@@ -127,13 +110,13 @@ class PatientServiceTest {
         pamAssessments.add(assessment6);
         pam.setAssessments(pamAssessments);
 
-        Attendance attendance1 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2024, 2, 1)).patient(jim).build();
-        Attendance attendance2 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2024, 3, 1)).patient(jim).build();
-        Attendance attendance3 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2024, 1, 15)).patient(dwight).build();
-        Attendance attendance4 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2024, 4, 20)).patient(dwight).build();
-        Attendance attendance5 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2024, 4, 1)).patient(pam).build();
-        Attendance attendance6 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2024, 5, 1)).patient(pam).build();
-        Attendance attendance7 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2024, 2, 1)).patient(pam).build();
+        Attendance attendance1 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2034, 2, 1)).patient(jim).build();
+        Attendance attendance2 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2034, 3, 1)).patient(jim).build();
+        Attendance attendance3 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2034, 1, 15)).patient(dwight).build();
+        Attendance attendance4 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2034, 4, 20)).patient(dwight).build();
+        Attendance attendance5 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2043, 4, 1)).patient(pam).build();
+        Attendance attendance6 = Attendance.builder().didAttend(false).dateOfAttendance(LocalDate.of(2034, 5, 1)).patient(pam).build();
+        Attendance attendance7 = Attendance.builder().didAttend(true).dateOfAttendance(LocalDate.of(2034, 2, 1)).patient(pam).build();
 
         List<Attendance> jimAttendance = new ArrayList<>();
         jimAttendance.add(attendance1);

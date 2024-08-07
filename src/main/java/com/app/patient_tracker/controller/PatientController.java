@@ -27,32 +27,31 @@ public class PatientController {
     private final PatientRequestValidator patientRequestValidator;
 
     @GetMapping("/all")
-    public ResponseEntity<?> findAllPatients() throws PatientNotFoundException {
+    public ResponseEntity<?> findAllPatients() throws ApplicationException {
         final var patients = patientService.getAllPatients();
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findPatientById(@PathVariable final Long id) throws PatientNotFoundException {
+    public ResponseEntity<?> findPatientById(@PathVariable final Long id) throws ApplicationException {
         final var patient = patientService.getPatientById(id);
         return ResponseEntity.status(HttpStatus.OK).body(patient);
     }
 
     @PostMapping("/add")
-    public ResponseEntity<?> addNewPatient(@RequestBody final PatientRequestDto patientRequestDto) throws MandatoryFieldsMissingException {
-        patientRequestValidator.validatePatientRequest(patientRequestDto);
+    public ResponseEntity<?> addNewPatient(@RequestBody final PatientRequestDto patientRequestDto) throws ApplicationException {
         final var patients = patientService.addNewPatient(patientRequestDto);
         return ResponseEntity.status(HttpStatus.OK).body(patients);
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<?> updatePatient(@PathVariable final Long id, @RequestBody final PatientUpdateRequest patientUpdateRequest) throws PatientNotFoundException, InvalidDataException, PatientUpdateException {
+    public ResponseEntity<?> updatePatient(@PathVariable final Long id, @RequestBody final PatientUpdateRequest patientUpdateRequest) throws ApplicationException, IllegalAccessException {
         patientService.updatePatientInfo(id, patientUpdateRequest);
         return ResponseEntity.status(HttpStatus.OK).body("Patient updated successfully.");
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deletePatientById(@PathVariable final Long id) throws DeleteOperationException {
+    public ResponseEntity<?> deletePatientById(@PathVariable final Long id) throws ApplicationException {
         patientService.deletePatientById(id);
         return ResponseEntity.status(HttpStatus.OK).body("Patient successfully deleted.");
     }

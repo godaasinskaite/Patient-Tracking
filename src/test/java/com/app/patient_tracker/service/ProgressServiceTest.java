@@ -1,7 +1,7 @@
 package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.ProgressRequestDto;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.ApplicationException;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
@@ -34,7 +34,7 @@ class ProgressServiceTest {
     private ProgressMappingService progressMappingService;
 
     @Test
-    void fillProgress() throws PatientNotFoundException {
+    void fillProgress() throws ApplicationException {
         Patient patient = loadTestData().get(0);
         ProgressRequestDto progressRequest = ProgressRequestDto.builder().build();
         Progress newProgress = Progress.builder().build();
@@ -49,7 +49,7 @@ class ProgressServiceTest {
     }
 
     @Test
-    void getProgressesByPatientId() throws PatientNotFoundException {
+    void getProgressesByPatientId() throws ApplicationException {
         Patient patient = loadTestData().get(0);
         Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
         progressService.getProgressesByPatientId(patient.getId());

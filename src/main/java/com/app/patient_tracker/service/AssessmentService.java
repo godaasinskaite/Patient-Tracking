@@ -1,10 +1,7 @@
 package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.AssessmentRequestDto;
-import com.app.patient_tracker.exception.AssessmentNotFoundException;
-import com.app.patient_tracker.exception.AssessmentUpdateException;
-import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.repository.AssessmentRepository;
@@ -34,27 +31,22 @@ public class AssessmentService {
      * maps the assessment request data to an entity and saves assessment to DB.
      *
      * @param patientId            Is the id of the patient to be assessed.
-     * @param assessmentRequestDto The assessment request data containing information about the new assessment.
+     * @param assessmentRequestDto The assessment request containing information about the new assessment.
      * @return The assessment entity representing the assessment of the patient.
-     * @throws PatientNotFoundException        If the patient with specified id is not found.
-     * @throws MandatoryFieldsMissingException If mandatory fields are missing in the assessment request data.
+     * @throws ApplicationException If the patient with specified id is not found
+     *                              or mandatory fields are missing in the assessment request.
      */
-    public Assessment assessPatient(final Long patientId, final AssessmentRequestDto assessmentRequestDto) throws PatientNotFoundException, MandatoryFieldsMissingException {
+    public Assessment assessPatient(final Long patientId, final AssessmentRequestDto assessmentRequestDto) throws ApplicationException {
         final Patient patient = patientService.getPatientById(patientId);
 
-        try {
-            assessmentRequestValidator.validateAssessmentRequest(assessmentRequestDto);
-            final Assessment newAssessment = assessmentMappingService.mapAttendanceToEntity(assessmentRequestDto);
-            newAssessment.setPatient(patient);
-            patient.getAssessments().add(newAssessment);
+        assessmentRequestValidator.validateAssessmentRequest(assessmentRequestDto);
+        final Assessment newAssessment = assessmentMappingService.mapAttendanceToEntity(assessmentRequestDto);
+        newAssessment.setPatient(patient);
+        patient.getAssessments().add(newAssessment);
 
-            assessmentRepository.save(newAssessment);
-            log.info("New assessment added.");
-            return newAssessment;
-        } catch (MandatoryFieldsMissingException e) {
-            log.error("Assessment request body was incorrect.");
-            throw new MandatoryFieldsMissingException("Assessment request missing mandatory fields.");
-        }
+        assessmentRepository.save(newAssessment);
+        log.info("New assessment added.");
+        return newAssessment;
     }
 
     /**
@@ -65,14 +57,13 @@ public class AssessmentService {
      * @param id     The id of the assessment to update.
      * @param title  New title for the assessment.
      * @param points New points for the assessment.
-     * @throws AssessmentNotFoundException If the assessment with specified id can not be found.
-     * @throws AssessmentUpdateException   If either the provided title or points is null,
-     *                                     indicating that the assessment can not be updated.
+     * @throws ApplicationException if Assessment with specified id can not be found
+     *                              or Assessment can not be updated.
      */
-    public void updateAssessment(final Long id, final String title, final Integer points) throws AssessmentNotFoundException, AssessmentUpdateException {
+    public void updateAssessment(final Long id, final String title, final Integer points) throws ApplicationException {
         log.info("Looking for assessment with id = " + id);
         final Assessment assessmentToUpdate = assessmentRepository.findById(id)
-                .orElseThrow(() -> new AssessmentNotFoundException("Assessment can not be found."));
+                .orElseThrow(() -> new ApplicationException("Assessment can not be found.", ErrorCode.ASSESSMENT_NOT_FOUND_EXCEPTION));
 
         if (title != null && points != null) {
             assessmentToUpdate.setTitle(title);
@@ -82,6 +73,6 @@ public class AssessmentService {
             assessmentRepository.save(assessmentToUpdate);
             return;
         }
-        throw new AssessmentUpdateException("Assessment can not be updated.");
+        throw new ApplicationException("Assessment can not be updated.", ErrorCode.ASSESSMENT_UPDATE_EXCEPTION);
     }
 }

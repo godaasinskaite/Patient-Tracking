@@ -1,7 +1,7 @@
 package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.ProgressRequestDto;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.ApplicationException;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.model.Progress;
 import com.app.patient_tracker.repository.ProgressRepository;
@@ -29,10 +29,10 @@ public class ProgressService {
      * Method fills out progress information for a patient.
      *
      * @param patientId          Is the unique identifier of a patient for whom progress is being filled.
-     * @param progressRequestDto The progress request FTO containing information to fill out progress.
-     * @throws PatientNotFoundException If no patient is found with specified id.
+     * @param progressRequestDto DTO containing information to fill out progress.
+     * @throws ApplicationException If patient is found with specified id.
      */
-    public void fillProgress(final Long patientId, final ProgressRequestDto progressRequestDto) throws PatientNotFoundException {
+    public void fillProgress(final Long patientId, final ProgressRequestDto progressRequestDto) throws ApplicationException {
         final Patient patient = patientService.getPatientById(patientId);
         final Progress progress = progressMappingService.mapProgressToEntity(progressRequestDto);
         progress.setPatient(patient);
@@ -45,9 +45,9 @@ public class ProgressService {
      *
      * @param id Is the unique identifier of a patient which progresses will be retrieved.
      * @return A list of progress records associated with the patient.
-     * @throws PatientNotFoundException If no patient with specified id is found.
+     * @throws ApplicationException If patient with specified id is found.
      */
-    public List<Progress> getProgressesByPatientId(final Long id) throws PatientNotFoundException {
+    public List<Progress> getProgressesByPatientId(final Long id) throws ApplicationException {
         final Patient patient = patientService.getPatientById(id);
         return patient.getPatientProgress();
     }

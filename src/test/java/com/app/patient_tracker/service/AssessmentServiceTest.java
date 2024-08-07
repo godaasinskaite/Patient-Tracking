@@ -1,10 +1,7 @@
 package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.AssessmentRequestDto;
-import com.app.patient_tracker.exception.AssessmentNotFoundException;
-import com.app.patient_tracker.exception.AssessmentUpdateException;
-import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
@@ -40,14 +37,14 @@ class AssessmentServiceTest {
     private PatientService patientService;
 
     @Test
-    void assessPatient() throws PatientNotFoundException, MandatoryFieldsMissingException {
+    void assessPatient() throws ApplicationException {
 
         Patient patient = loadTestData().get(0);
         AssessmentRequestDto requestDto = AssessmentRequestDto.builder().title("title").points(1).patientId(patient.getId()).build();
         Assessment assessment = Assessment.builder().id(200L).points(1).title("title").patient(patient).build();
 
         Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
-        Mockito.when(assessmentRequestValidator.validateAssessmentRequest(requestDto)).thenReturn(true);
+//        Mockito.when(assessmentRequestValidator.validateAssessmentRequest(requestDto)).thenReturn(true);
         Mockito.when(mappingService.mapAttendanceToEntity(requestDto)).thenReturn(assessment);
         Mockito.when(assessmentRepository.save(assessment)).thenReturn(assessment);
 
@@ -56,7 +53,7 @@ class AssessmentServiceTest {
     }
 
     @Test
-    void updateAssessment() throws AssessmentUpdateException, AssessmentNotFoundException {
+    void updateAssessment() throws ApplicationException {
         Assessment assessment = loadTestData().get(0).getAssessments().get(0);
         String newTitle = "newTitle";
         Integer newPoints = 5;

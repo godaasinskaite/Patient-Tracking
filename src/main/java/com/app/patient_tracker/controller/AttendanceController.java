@@ -1,10 +1,7 @@
 package com.app.patient_tracker.controller;
 
 import com.app.patient_tracker.dto.AttendanceRequestDto;
-import com.app.patient_tracker.exception.AttendanceMappingException;
-import com.app.patient_tracker.exception.AttendanceNotFoundException;
-import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.service.AttendanceService;
 import lombok.RequiredArgsConstructor;
@@ -25,25 +22,25 @@ public class AttendanceController {
     private final AttendanceService attendanceService;
 
     @GetMapping("/all")
-    public ResponseEntity<?> getAllAttendances() throws AttendanceNotFoundException {
+    public ResponseEntity<?> getAllAttendances() throws ApplicationException {
         final var attendances = attendanceService.getAllAttendances();
         return ResponseEntity.status(HttpStatus.OK).body(attendances);
     }
 
     @PatchMapping("/{attendanceId}")
-    public ResponseEntity<?> markAttendance(@PathVariable final Long attendanceId) throws PatientNotFoundException, AttendanceNotFoundException {
+    public ResponseEntity<?> markAttendance(@PathVariable final Long attendanceId) throws ApplicationException {
         attendanceService.markAttendance(attendanceId);
         return ResponseEntity.status(HttpStatus.OK).body("Attendance marked.");
     }
 
     @GetMapping("/schedule")
-    public ResponseEntity<?> checkSchedule() throws AttendanceNotFoundException {
+    public ResponseEntity<?> checkSchedule() throws ApplicationException {
         final var upcomingOccupationDates = attendanceService.checkSchedule();
         return ResponseEntity.status(HttpStatus.OK).body(upcomingOccupationDates);
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<?> scheduleAppointment(@PathVariable final Long PatientId, @RequestBody final AttendanceRequestDto attendanceRequestDto) throws AttendanceMappingException, PatientNotFoundException, MandatoryFieldsMissingException {
+    public ResponseEntity<?> scheduleAppointment(@PathVariable final Long PatientId, @RequestBody final AttendanceRequestDto attendanceRequestDto) throws ApplicationException {
         final var attendance = attendanceService.scheduleAppointment(attendanceRequestDto, PatientId);
         return ResponseEntity.status(HttpStatus.OK).body(attendance);
     }

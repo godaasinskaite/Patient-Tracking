@@ -5,6 +5,7 @@ import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
 import com.app.patient_tracker.repository.PatientRepository;
+import com.app.patient_tracker.validator.PatientRequestValidator;
 import com.app.patient_tracker.validator.PatientUpdateRequestValidator;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +30,15 @@ public class PatientService {
     private final Cache cache;
     private final PatientMappingService mappingService;
     private final PatientUpdateRequestValidator patientUpdateDataValidator;
+    private final PatientRequestValidator patientRequestValidator;
 
-    public PatientService(PatientRepository patientRepository, CacheManager cacheManager, PatientMappingService mappingService, PatientUpdateRequestValidator patientUpdateDataValidator) {
+    public PatientService(PatientRepository patientRepository, CacheManager cacheManager, PatientMappingService mappingService, PatientUpdateRequestValidator patientUpdateDataValidator, PatientRequestValidator patientRequestValidator) {
         this.patientRepository = patientRepository;
         this.cacheManager = cacheManager;
         this.cache = cacheManager.getCache("cache");
         this.mappingService = mappingService;
         this.patientUpdateDataValidator = patientUpdateDataValidator;
+        this.patientRequestValidator = patientRequestValidator;
     }
 
     /**
@@ -59,19 +62,18 @@ public class PatientService {
     }
 
     /**
-     * Method retrieves a list of patients from database.
-     * Throws an exception if the patient list is empty.
+     * Method retrieves a list of patients that were found in database.
      *
      * @return A list containing all patients stored in the database.
-     * @throws PatientNotFoundException If the list is empty.
+     * @throws ApplicationException If the patient list is empty in the DB.
      */
-    public List<Patient> getAllPatients() throws PatientNotFoundException {
+    public List<Patient> getAllPatients() throws ApplicationException {
         log.info("Looking for patients in DB.");
         final List<Patient> patients = patientRepository.findAll();
 
         if (patients.isEmpty()) {
             log.error("DB is empty. No patients were found.");
-            throw new PatientNotFoundException("No patients were found.");
+            throw new ApplicationException("No patients were found.", ErrorCode.PATIENT_NOT_FOUND_EXCEPTION);
         }
 
         log.info(patients.size() + " patients were found in the DB.");
@@ -83,26 +85,28 @@ public class PatientService {
      *
      * @param id Is the unique identifier of the patient object.
      * @return The patient object itself.
-     * @throws PatientNotFoundException If no patients with specified id is found in the database.
+     * @throws ApplicationException If patient with specified id can not be found in the database.
      */
-    public Patient getPatientById(final Long id) throws PatientNotFoundException {
+    public Patient getPatientById(final Long id) throws ApplicationException {
         log.info("Looking for patient with id= " + id + " in the DB.");
         //TODO: caching
         return patientRepository.findById(id)
-                .orElseThrow(() -> new PatientNotFoundException("Patient can not be found."));
+                .orElseThrow(() -> new ApplicationException("Patient with id = " + id + " can not be found.", ErrorCode.PATIENT_NOT_FOUND_EXCEPTION));
     }
 
     /**
-     * Method adds a new patient to the database based on the provided patient request DTO.
-     * Request body is validated on controller layer.
+     * Method validates given dto and adds a new patient to the database based on the provided patient request DTO.
      *
      * @param patientDto The patient request Dto containing information about the new patient.
      * @return A list of patient response DTOs after adding new patient.
+     * @throws ApplicationException if no patients can not be found in the database.
      */
-    public List<PatientResponseDto> addNewPatient(final PatientRequestDto patientDto) {
+    public List<PatientResponseDto> addNewPatient(final PatientRequestDto patientDto) throws ApplicationException {
+        patientRequestValidator.validatePatientRequest(patientDto);
         final Patient patient = mappingService.mapPatientToEntity(patientDto);
         patientRepository.save(patient);
         log.info("New patient was added.");
+
         final List<Patient> allPatients = patientRepository.findAll();
         return mappingService.mapPatientsToResponse(allPatients);
     }
@@ -112,44 +116,36 @@ public class PatientService {
      *
      * @param patientId            The unique identifier of the patient to be updated.
      * @param patientUpdateRequest The update request containing new information for the new information about existing patient.
-     * @throws InvalidDataException     If the validator detects that provided update request contains invalid data or are the same as the old one.
-     * @throws PatientUpdateException   If the patient update cannot be performed due to validation or other reasons.
-     * @throws PatientNotFoundException If no patient with specified ID is found in the database.
+     * @throws ApplicationException If no patient with specified ID is found in the database.
+     *                              or if PatientUpdateRequest does not pass the validation.
      */
-    @Transactional
-    public void updatePatientInfo(final Long patientId, final PatientUpdateRequest patientUpdateRequest) throws InvalidDataException, PatientUpdateException, PatientNotFoundException {
+    public void updatePatientInfo(final Long patientId, final PatientUpdateRequest patientUpdateRequest) throws ApplicationException, IllegalAccessException {
         final Patient patient = getPatientById(patientId);
 
-        log.info("Validating given data for update.");
-        final Boolean validated = patientUpdateDataValidator.validateGivenDataForUpdate(patientUpdateRequest, patient);
+        patientUpdateDataValidator.validateGivenDataForUpdate(patientUpdateRequest, patient);
+        patient.setName(patientUpdateRequest.getName());
+        patient.setLastName(patientUpdateRequest.getLastName());
+        patient.setDob(patientUpdateRequest.getDob());
+        patient.setContactInfo(patientUpdateRequest.getContactInfo());
 
-        if (validated) {
-            patient.setName(patientUpdateRequest.getName());
-            patient.setLastName(patientUpdateRequest.getLastName());
-            patient.setDob(patientUpdateRequest.getDob());
-            patient.setContactInfo(patientUpdateRequest.getContactInfo());
-
-            patientRepository.save(patient);
-            log.info("Patient was updated successfully.");
-            return;
-        }
-        throw new PatientUpdateException("Patient can not be updated.");
+        patientRepository.save(patient);
+        log.info("Patient was updated successfully.");
     }
 
     /**
      * Method deletes a patient from database by the specified id.
      *
      * @param id Is the unique identifier of the patient to be deleted.
-     * @throws DeleteOperationException If an error occurs while deleting a patient from the database.
+     * @throws ApplicationException If an error occurs while deleting a patient from the database.
      */
-    public void deletePatientById(final Long id) throws DeleteOperationException {
+    public void deletePatientById(final Long id) throws ApplicationException {
         try {
             log.info("Looking for patient with id = " + id + " in the DB.");
             patientRepository.deleteById(id);
 
         } catch (Exception e) {
             log.error("Failed to delete patient with id = " + id);
-            throw new DeleteOperationException("Failed to delete patient. Try different id.");
+            throw new ApplicationException("Failed to delete patient. Try different id.", ErrorCode.DELETE_OPERATION_EXCEPTION);
         }
     }
 }

@@ -1,10 +1,7 @@
 package com.app.patient_tracker.service;
 
 import com.app.patient_tracker.dto.AttendanceRequestDto;
-import com.app.patient_tracker.exception.AttendanceMappingException;
-import com.app.patient_tracker.exception.AttendanceNotFoundException;
-import com.app.patient_tracker.exception.MandatoryFieldsMissingException;
-import com.app.patient_tracker.exception.PatientNotFoundException;
+import com.app.patient_tracker.exception.*;
 import com.app.patient_tracker.model.Assessment;
 import com.app.patient_tracker.model.Attendance;
 import com.app.patient_tracker.model.Patient;
@@ -44,7 +41,7 @@ class AttendanceServiceTest {
     private AttendanceMappingService attendanceMappingService;
 
     @Test
-    void findAttendanceById() throws AttendanceNotFoundException {
+    void findAttendanceById() throws ApplicationException {
         Attendance attendance = loadTestData().get(0).getAttendances().get(1);
         Mockito.when(attendanceRepository.findById(attendance.getId())).thenReturn(Optional.of(attendance));
         Attendance foundAttendance = attendanceService.findAttendanceById(attendance.getId());
@@ -52,7 +49,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void markAttendance() throws AttendanceNotFoundException {
+    void markAttendance() throws ApplicationException {
         Attendance attendance = loadTestData().get(0).getAttendances().get(1);
         Mockito.when(attendanceRepository.findById(attendance.getId())).thenReturn(Optional.of(attendance));
         when(attendanceRepository.save(Mockito.any(Attendance.class))).thenReturn(attendance);
@@ -63,7 +60,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void getAllAttendances() throws AttendanceNotFoundException {
+    void getAllAttendances() throws ApplicationException {
         List<Attendance> allAttendances = loadTestData().stream()
                 .flatMap(patient -> patient.getAttendances().stream())
                 .collect(Collectors.toList());
@@ -75,7 +72,7 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void checkSchedule() throws AttendanceNotFoundException {
+    void checkSchedule() throws ApplicationException {
         List<Attendance> allAttendances = loadTestData().stream()
                 .flatMap(patient -> patient.getAttendances().stream())
                 .collect(Collectors.toList());
@@ -86,13 +83,13 @@ class AttendanceServiceTest {
     }
 
     @Test
-    void scheduleAppointment() throws MandatoryFieldsMissingException, AttendanceMappingException, PatientNotFoundException {
+    void scheduleAppointment() throws ApplicationException {
         Patient patient = loadTestData().get(0);
         Attendance newAttendance = Attendance.builder().id(100L).dateOfAttendance(LocalDate.now()).patient(patient).build();
         AttendanceRequestDto attendanceRequest = AttendanceRequestDto.builder().patientId(patient.getId()).dateOfAttendance(LocalDate.now()).build();
 
         Mockito.when(patientService.getPatientById(patient.getId())).thenReturn(patient);
-        Mockito.when(attendanceRequestValidator.validateAttendanceRequest(attendanceRequest)).thenReturn(true);
+//        Mockito.when(attendanceRequestValidator.validateAttendanceRequest(attendanceRequest)).thenReturn(true);
         Mockito.when(attendanceMappingService.mapAttendanceToEntity(attendanceRequest)).thenReturn(newAttendance);
         Mockito.when(attendanceRepository.save(newAttendance)).thenReturn(newAttendance);
         Mockito.doNothing().when(patientService).checkForNextAppointment(patient);
@@ -102,7 +99,6 @@ class AttendanceServiceTest {
         Assertions.assertEquals(3, patient.getAttendances().size());
         Assertions.assertEquals(LocalDate.now(), patient.getAttendances().get(2).getDateOfAttendance());
     }
-
 
 
     List<Patient> loadTestData() {
